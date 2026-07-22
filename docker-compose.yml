@@ -1,0 +1,19 @@
+---
+services:
+  step-ca:
+    image: smallstep/step-ca:${STEP_CA_TAG:-latest}
+    container_name: step-ca
+    restart: always
+    environment:
+      - DOCKER_STEPCA_INIT_NAME=${CA_NAME:-nuhost6-ca}
+      - DOCKER_STEPCA_INIT_DNS_NAMES=${CA_DNS:-step-ca}
+      - DOCKER_STEPCA_INIT_ADDRESS=:9000
+      - DOCKER_STEPCA_INIT_ACME=${CA_ACME:-true}
+      - DOCKER_STEPCA_INIT_PASSWORD=${CA_PASSWORD:-}
+    volumes:
+      - step-ca-data:/home/step
+    logging:
+      driver: ${LOG_DRIVER:-journald}
+
+volumes:
+  step-ca-data:
