@@ -3,8 +3,7 @@ FROM smallstep/step-ca:latest
 # step-ca mit ACME-Provisioner fuer nuhost6
 # Konfiguration per Environment und init-Script
 
-COPY init-ca.sh /usr/local/bin/init-ca.sh
-RUN chmod +x /usr/local/bin/init-ca.sh
+COPY --chmod=755 init-ca.sh /usr/local/bin/init-ca.sh
 
 ENV STEPPATH=/home/step
 ENV CA_NAME=nuhost6-ca
