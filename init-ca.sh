@@ -18,33 +18,28 @@ if [ ! -f "$STEPPATH/config/ca.json" ]; then
     # Passwort generieren oder aus ENV
     mkdir -p "$STEPPATH/secrets"
     if [ -n "$CA_PASSWORD" ]; then
-        echo "$CA_PASSWORD" > "$PW_FILE"
+        printf '%s' "$CA_PASSWORD" > "$PW_FILE"
     elif [ ! -f "$PW_FILE" ]; then
-        openssl rand -hex 32 > "$PW_FILE"
+        head -c 32 /dev/urandom | od -A n -t x1 | tr -d ' \n' > "$PW_FILE"
         echo "  CA-Passwort generiert: $PW_FILE"
     fi
 
-    # CA initialisieren
+    # CA initialisieren (non-interactive)
     step ca init \
         --name "$CA_NAME" \
         --dns "$CA_DNS" \
         --address "$CA_ADDRESS" \
         --provisioner admin \
         --password-file "$PW_FILE" \
-        --deployment-type standalone
-
-    # ACME-Provisioner hinzufuegen (Let's Encrypt kompatibel)
-    step ca provisioner add "$ACME_PROVISIONER" \
-        --type ACME \
-        --password-file "$PW_FILE"
+        --provisioner-password-file "$PW_FILE" \
+        --deployment-type standalone \
+        --acme
 
     echo "  CA initialisiert: $CA_NAME"
-    echo "  ACME-Provisioner: $ACME_PROVISIONER"
-    echo "  ACME-URL: https://$CA_DNS${CA_ADDRESS}/acme/$ACME_PROVISIONER/directory"
+    echo "  ACME-URL: https://${CA_DNS}${CA_ADDRESS}/acme/acme/directory"
     echo ""
     echo "  Root-CA installieren auf Clients:"
-    echo "    step ca root > /usr/local/share/ca-certificates/nuhost6-ca.crt"
-    echo "    update-ca-certificates"
+    echo "    step ca root --ca-url https://<step-ca-ip>:9000"
     echo ""
 fi
 
